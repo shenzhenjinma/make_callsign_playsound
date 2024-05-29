@@ -68,9 +68,9 @@
         async function playMorseCodes() {
             isPaused = false;
             generateCallsigns();
-            await playMorseCode("BA7ODY");
+            await playMorseCode("BA7ODY");//作者
             await new Promise(resolve => setTimeout(resolve, 2000)); 
-            await playMorseCode("BA7MHN");
+            await playMorseCode("BA7MHN");//大佬，大佬给的灵感
             await new Promise(resolve => setTimeout(resolve, 2000)); 
             for (let i = 0; i < callsigns.length; i++) {
                 if (isPaused) break;
