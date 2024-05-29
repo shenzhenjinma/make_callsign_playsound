@@ -12,7 +12,7 @@
     <label for="speed">速度:</label>
     <input type="range" min="0.1" max="2" step="0.1" value="1" id="speed" onchange="changeSpeed()">
     <span id="speedValue">1</span>
-    <div id="callsignList" style="height: 9200px; overflow-y: scroll; border: 1px solid #000;"></div>
+    <div id="callsignList" style="height: 200px; overflow-y: scroll; border: 1px solid #000;"></div>
 
     <script>
         var audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -20,7 +20,7 @@
         gainNode.connect(audioContext.destination);
         gainNode.gain.value = 0.1; // 音量控制
         var unitTime = 100; // 每个摩尔斯电码单元时间（毫秒）
-        var frequency = 600; // 声音频率（Hz）
+        var frequency = 450; // 声音频率（Hz）
         var speed = 1; // 默认速度
         var callsigns = [];
         var isPaused = false;
@@ -68,6 +68,8 @@
         async function playMorseCodes() {
             isPaused = false;
             generateCallsigns();
+            await playMorseCode("BA7ODY");
+            await new Promise(resolve => setTimeout(resolve, 2000)); // 等待2秒
             for (let i = 0; i < callsigns.length; i++) {
                 if (isPaused) break;
                 await playMorseCode(callsigns[i]);
@@ -86,7 +88,7 @@
         function playMorseCode(callsign) {
             playPromise = new Promise(async (resolve, reject) => {
                 var morseCode = convertToMorseCode(callsign);
-                addCallsignToList(callsign);
+                addCallsignToList(callsign,morseCode);
 
                 for (const symbol of morseCode.split('')) {
                     if (isPaused) {
@@ -151,10 +153,10 @@
             return morseCode.trim();
         }
 
-        function addCallsignToList(callsign) {
+        function addCallsignToList(callsign,morseCode) {
             var callsignList = document.getElementById('callsignList');
             var callsignElement = document.createElement('div');
-            callsignElement.innerText = '呼号: ' + callsign;
+            callsignElement.innerText = '呼号: ' + callsign + "  " + morseCode;
             callsignList.appendChild(callsignElement);
             callsignList.scrollTop = callsignList.scrollHeight;
         }
