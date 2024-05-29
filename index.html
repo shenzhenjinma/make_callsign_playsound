@@ -8,6 +8,7 @@
 <body>
     <h1>摩尔斯电码声音生成器</h1>
     <button onclick="playMorseCodes()">播放摩尔斯电码</button>
+    <button onclick="pauseMorseCodes()">暂停摩尔斯电码</button>
     <label for="speed">速度:</label>
     <input type="range" min="0.1" max="2" step="0.1" value="1" id="speed" onchange="changeSpeed()">
     <span id="speedValue">1</span>
@@ -22,13 +23,36 @@
         var frequency = 600; // 声音频率（Hz）
         var speed = 1; // 默认速度
         var callsigns = [];
+        var isPaused = false;
+        var playPromise = null;
+
+        function getParameterByName(name) {
+            var url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+            var results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
 
         function generateCallsign() {
             var callsign = '';
             var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            var length = 6;
-            for (var i = 0; i < length; i++) {
-                callsign += characters.charAt(Math.floor(Math.random() * characters.length));
+            var specialCharacters = 'ADGHIY';
+            var callsignParam = getParameterByName('callsign');
+
+            if (callsignParam === 'china') {
+                callsign += 'B';
+                callsign += specialCharacters.charAt(Math.floor(Math.random() * specialCharacters.length));
+                callsign += Math.floor(Math.random() * 10).toString();
+                for (var i = 3; i < 6; i++) {
+                    callsign += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
+            } else {
+                for (var i = 0; i < 6; i++) {
+                    callsign += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
             }
             return callsign;
         }
@@ -41,19 +65,33 @@
         }
 
         async function playMorseCodes() {
+            isPaused = false;
             generateCallsigns();
             for (let i = 0; i < callsigns.length; i++) {
+                if (isPaused) break;
                 await playMorseCode(callsigns[i]);
                 await new Promise(resolve => setTimeout(resolve, 2000)); // 等待2秒
             }
         }
 
+        function pauseMorseCodes() {
+            isPaused = true;
+            if (playPromise !== null) {
+                playPromise.cancel();
+                playPromise = null;
+            }
+        }
+
         function playMorseCode(callsign) {
-            return new Promise(async resolve => {
+            playPromise = new Promise(async (resolve, reject) => {
                 var morseCode = convertToMorseCode(callsign);
                 addCallsignToList(callsign);
 
                 for (const symbol of morseCode.split('')) {
+                    if (isPaused) {
+                        reject('Paused');
+                        return;
+                    }
                     switch (symbol) {
                         case ".":
                             playSound(1);
@@ -66,15 +104,13 @@
                         case " ":
                             await sleep(unitTime / speed); // 字符之间的间隔
                             break;
-                        case "/":
-                            await sleep(7 * unitTime / speed); // 单词之间的间隔
-                            break;
                     }
                     await sleep(unitTime / speed); // 每个符号之后的间隔
                 }
 
                 resolve();
             });
+            return playPromise;
         }
 
         function playSound(duration) {
@@ -107,7 +143,7 @@
                 if (morseAlphabet[character]) {
                     morseCode += morseAlphabet[character] + ' ';
                 } else {
-                    morseCode += '/ ';
+                    morseCode += '  ';
                 }
             }
 
