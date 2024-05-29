@@ -39,6 +39,7 @@
         function generateCallsign() {
             var callsign = '';
             var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            var chinacharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             var specialCharacters = 'ADGHIY';
             var callsignParam = getParameterByName('callsign');
 
@@ -47,7 +48,7 @@
                 callsign += specialCharacters.charAt(Math.floor(Math.random() * specialCharacters.length));
                 callsign += Math.floor(Math.random() * 10).toString();
                 for (var i = 3; i < 6; i++) {
-                    callsign += characters.charAt(Math.floor(Math.random() * characters.length));
+                    callsign += chinacharacters.charAt(Math.floor(Math.random() * chinacharacters.length));
                 }
             } else {
                 for (var i = 0; i < 6; i++) {
