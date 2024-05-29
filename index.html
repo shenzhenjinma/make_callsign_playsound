@@ -69,7 +69,9 @@
             isPaused = false;
             generateCallsigns();
             await playMorseCode("BA7ODY");
-            await new Promise(resolve => setTimeout(resolve, 2000)); // 等待2秒
+            await new Promise(resolve => setTimeout(resolve, 2000)); 
+            await playMorseCode("BA7MHN");
+            await new Promise(resolve => setTimeout(resolve, 2000)); 
             for (let i = 0; i < callsigns.length; i++) {
                 if (isPaused) break;
                 await playMorseCode(callsigns[i]);
